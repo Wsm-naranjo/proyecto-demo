@@ -1,0 +1,53 @@
+name: Túnel temporal para compañeros
+
+# Se activa a mano desde la pestaña "Actions" de este repo, justo cuando
+# quieras que tus compañeros entren a probar. Mientras el job siga
+# corriendo, hay un link público funcionando; al terminar (o al cancelarlo
+# tú mismo), el link muere solo. No queda nada corriendo de forma
+# permanente aparte de la demo normal en GitHub Pages.
+on:
+  workflow_dispatch:
+    inputs:
+      minutos:
+        description: "Minutos que se mantiene abierto el link"
+        default: "30"
+
+jobs:
+  tunnel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descargar cloudflared
+        run: |
+          curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+          chmod +x cloudflared
+
+      - name: Servir el sitio ya compilado (lo que hay en este repo)
+        run: |
+          python3 -m http.server 8080 &
+          sleep 2
+
+      - name: Abrir el túnel y publicar el link
+        run: |
+          ./cloudflared tunnel --url http://localhost:8080 > tunnel.log 2>&1 &
+          for i in $(seq 1 15); do
+            URL=$(grep -oE 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' tunnel.log | head -n1 || true)
+            [ -n "$URL" ] && break
+            sleep 2
+          done
+          if [ -z "$URL" ]; then
+            echo "No se pudo abrir el túnel a tiempo. Revisa el log del paso anterior." >> "$GITHUB_STEP_SUMMARY"
+            cat tunnel.log
+            exit 1
+          fi
+          {
+            echo "## 🔗 Link temporal para tus compañeros"
+            echo ""
+            echo "**$URL**"
+            echo ""
+            echo "Se cierra solo en ${{ inputs.minutos }} minutos (o si cancelas este job antes)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Link: $URL"
+          SEGUNDOS=$(( ${{ inputs.minutos }} * 60 ))
+          sleep "$SEGUNDOS"
