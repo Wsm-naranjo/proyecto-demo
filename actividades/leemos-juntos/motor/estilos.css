@@ -1,0 +1,349 @@
+/* =============================================================
+   ESTILOS.CSS — Leemos juntos
+   Paleta y tipografía alineadas con el resto de la plataforma
+   (azul de marca, tarjetas blancas, sombras suaves). El "app" ocupa
+   el alto de la pantalla y solo el texto de la lectura (.libro) hace
+   scroll por dentro: cabecera, dibujo y el turno del estudiante se
+   ven siempre, sin que haga falta desplazar toda la página.
+   ============================================================= */
+/* Reutiliza los mismos archivos de fuente que ya trae Fonética, en vez de
+   depender de una red externa — misma carpeta de letras, un solo lugar. */
+@font-face { font-family: 'Fredoka'; font-weight: 400; font-display: swap; src: url('../../fonetica/lib/fonts/fredoka-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Fredoka'; font-weight: 600; font-display: swap; src: url('../../fonetica/lib/fonts/fredoka-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Fredoka'; font-weight: 700; font-display: swap; src: url('../../fonetica/lib/fonts/fredoka-latin-700-normal.woff2') format('woff2'); }
+
+:root {
+  --tinta:   #1e293b;
+  --suave:   #64748b;
+  --papel:   #ffffff;
+  --linea:   #e2e8f0;
+  --marca:   #1d4ed8;
+  --oro:     #f59e0b;
+  --naranja: #ea580c;
+  --verde:   #059669;
+  --rojo:    #e11d48;
+  --azul:    #1d4ed8;
+  --lila:    #7c3aed;
+  --sombra:  0 6px 18px rgba(15, 23, 42, .08);
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  overflow: hidden;                 /* el scroll vive dentro de .libro, no en la página */
+  color: var(--tinta);
+  /* Fredoka: misma fuente que el resto de la plataforma (hub, Fonética,
+     Cuentacuentos). El texto del cuento (.libro) sigue en Georgia, aparte,
+     por legibilidad de lectura larga — ver esa regla más abajo. */
+  font-family: "Fredoka", "Baloo 2", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: linear-gradient(#8fd3ff 0%, #c9ecff 48%, #fff5da 100%);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  height: 100dvh;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+.app[data-estado="portada"] > *:not(.cabecera):not(.escenario) { visibility: hidden; }
+
+/* ---------- cabecera ---------- */
+.cabecera { flex: none; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.unidad { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--lila); font-weight: 700; }
+h1 { margin: 0; font-size: clamp(18px, 3vw, 24px); font-weight: 800; color: var(--tinta); }
+.modo {
+  font-size: 12.5px; font-weight: 600; background: #fff; border: 1px solid var(--linea); color: var(--suave);
+  border-radius: 999px; padding: 5px 13px; max-width: 100%;
+}
+.modo:empty { display: none; }
+
+/* ---------- escenario ---------- */
+.escenario {
+  flex: none;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  /* nunca más alto que ~28% de la pantalla, pero sin recortar el dibujo:
+     si falta altura, se achica el ancho y se conserva la proporción */
+  width: min(100%, calc(28vh * 16 / 9));
+  margin-inline: auto;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--sombra);
+  background: #bfdbfe;
+}
+#lienzo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.lugar {
+  position: absolute; left: 10px; top: 10px;
+  background: rgba(255,255,255,.92); padding: 5px 12px; border-radius: 999px;
+  font-weight: 700; font-size: 13px; color: var(--tinta); box-shadow: 0 2px 8px rgba(0,0,0,.12);
+}
+.lugar:not(:empty)::before { content: "📍 "; }
+
+/* ---------- el SVG: lugares y personaje ---------- */
+.esc { opacity: 0; transition: opacity 1.4s ease; }
+.esc.activa { opacity: 1; }
+
+.deriva { animation: deriva linear infinite; }
+@keyframes deriva { from { transform: translateX(-200px); } to { transform: translateX(1160px); } }
+
+.polvo  { animation: flota ease-in-out infinite alternate; }
+@keyframes flota { from { transform: translate(0,0); opacity: .15; } to { transform: translate(16px,-26px); opacity: .9; } }
+.titila { animation: titila 2.6s ease-in-out infinite; }
+@keyframes titila { 50% { opacity: .2; } }
+.ave    { animation: vuela 28s linear infinite; }
+@keyframes vuela { from { transform: translate(-90px,150px); } to { transform: translate(1050px,70px); } }
+.gota   { stroke: rgba(255,255,255,.75); stroke-width: 2; animation: cae linear infinite; }
+@keyframes cae { from { transform: translate(0,0); } to { transform: translate(-45px,620px); } }
+.olas   { animation: ola 5s ease-in-out infinite alternate; }
+.olas.lenta { animation-duration: 8s; animation-direction: alternate-reverse; }
+.ondas  { animation: ola 4s ease-in-out infinite alternate; }
+@keyframes ola { from { transform: translateX(0); } to { transform: translateX(-80px); } }
+
+#viajera-pos { transition: transform 2.6s cubic-bezier(.45,.05,.25,1); }
+.vaiven { animation: vaiven 4.8s ease-in-out infinite alternate; transform-origin: 0 -240px; }
+@keyframes vaiven { from { transform: rotate(-3deg) translateY(0); } to { transform: rotate(3deg) translateY(-8px); } }
+.domo { transform-origin: 0 -150px; transition: transform 1.5s cubic-bezier(.3,1.3,.5,1); }
+#viajera.cerrado .domo { transform: scale(1, .05); }
+#viajera.media   .domo { transform: scale(1, .45); }
+#viajera .cuerdas { transition: opacity 1s; }
+#viajera.cerrado .cuerdas { opacity: 0; }
+#viajera.cerrado .vaiven { animation-play-state: paused; }
+#viajera .sombra { transition: opacity 1s; opacity: 0; }
+#viajera.cerrado .sombra { opacity: 1; }
+.coleta { animation: coleta 1.2s ease-in-out infinite alternate; transform-origin: 14px -92px; }
+@keyframes coleta { from { transform: rotate(-8deg); } to { transform: rotate(10deg); } }
+.paginas { animation: aletea 1.6s ease-in-out infinite alternate; transform-origin: 0 4px; }
+@keyframes aletea { from { transform: scaleY(.7); } to { transform: scaleY(1.1); } }
+#viajera.cerrado .paginas { animation: none; transform: scaleY(.15); }
+#viajera.salto .mia { animation: salto .9s ease-out; }
+@keyframes salto { 30% { transform: translateY(-34px); } 60% { transform: translateY(0); } 80% { transform: translateY(-12px); } }
+.chispa { animation: chispa 1s ease-out forwards; }
+@keyframes chispa { from { transform: translate(0,0) scale(1); opacity: 1; } to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+
+/* ---------- el libro: lo único que hace scroll ---------- */
+.libro {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px 4px 2px 2px;
+}
+
+/* ---------- el avance ---------- */
+.avance { flex: none; display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; min-height: 16px; }
+.punto { width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 3px solid var(--linea); transition: all .3s; }
+.punto.actual   { border-color: var(--naranja); transform: scale(1.3); }
+.punto.ok       { background: var(--verde); border-color: var(--verde); }
+.punto.practicar{ background: var(--oro); border-color: #c17d05; }
+
+/* ---------- la página del cuento ---------- */
+.pagina {
+  position: relative;
+  padding: 20px 24px;
+  background: var(--papel);
+  border: 1px solid var(--linea);
+  border-radius: 16px;
+  box-shadow: var(--sombra);
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-size: clamp(18px, 2.4vw, 25px);
+  line-height: 1.7;
+}
+.pagina.entra { animation: entra .5s ease; }
+@keyframes entra { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.parte { margin: 0 0 .55em; --c: #7c3aed; }
+.parte:last-child { margin-bottom: 0; }
+.parte[data-voz="libro"]   { --c: var(--marca); }
+.parte[data-voz="abuela"]  { --c: #c2410c; }
+.parte[data-voz="anciano"] { --c: #0f766e; }
+.parte[data-voz="nina"]    { --c: #be185d; }
+.parte[data-voz]:not([data-voz="narradora"]) { border-left: 4px solid var(--c); padding-left: 13px; }
+.etiqueta {
+  display: inline-block; vertical-align: middle; margin-right: 8px;
+  font: 700 12px "Segoe UI", sans-serif; letter-spacing: .3px;
+  color: #fff; background: var(--c); border-radius: 999px; padding: 2px 11px;
+}
+
+.pal { border-radius: 5px; transition: background .12s, color .12s; }
+.pal.diciendo { background: #fde68a; box-shadow: 0 0 0 3px #fde68a; }
+.pal.dicha    { color: #94a3b8; }
+
+/* la palabra o frase que lee el estudiante */
+.hueco {
+  display: inline;
+  padding: 2px 10px 2px 8px;
+  border-radius: 10px;
+  background: #fef3c7;
+  border: 1.5px solid #fbbf24;
+  transition: background .25s, border-color .25s;
+}
+.hueco::before { content: "🎤"; font-size: .7em; margin-right: 6px; }
+/* la que le toca leer al estudiante: se ilumina y late para llamar la atención */
+.hueco.pendiente { background: #fde68a; border-color: var(--naranja); animation: late 1.1s ease-in-out infinite; }
+@keyframes late { 50% { box-shadow: 0 0 0 7px rgba(234,88,12,.25); } }
+.hueco.escuchando { background: #fee2e2; border-color: var(--rojo); }
+/* bien leída: verde con ✔ */
+.hueco.ok       { background: #d1fae5; border-color: var(--verde); animation: none; }
+.hueco.ok::before { content: "✔"; color: var(--verde); font-weight: 700; font-size: 1em; }
+/* mal leída: roja con ✘; se vuelve a intentar */
+.hueco.mal       { background: #fee2e2; border-color: var(--rojo); }
+.hueco.mal::before { content: "✘"; color: var(--rojo); font-weight: 700; font-size: 1em; }
+.hueco.practicar { background: #fef3c7; border-color: var(--oro); animation: none; }
+.hueco.practicar::before { content: "★"; color: var(--oro); }
+.hueco .pal.leida { color: var(--verde); font-weight: 700; }
+.hueco.tiembla { animation: tiembla .45s; }
+@keyframes tiembla { 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
+
+/* lo que dice la narradora fuera del cuento (bienvenida, final): se ve escrito */
+.leyenda {
+  flex: none; margin: 0; padding: 6px 16px; text-align: center;
+  font: italic 16px Georgia, serif; color: var(--lila);
+}
+.leyenda[hidden] { display: none; }
+
+.nota {
+  flex: none; margin: 0; padding: 10px 14px;
+  background: #faf5ff; border-left: 4px solid var(--lila); border-radius: 12px;
+  font-size: 14.5px; line-height: 1.5; color: var(--tinta);
+}
+.nota[hidden] { display: none; }
+.nota::before { content: "💡 ¿Sabías que…? "; font-weight: 700; color: var(--lila); }
+
+/* ---------- el turno del estudiante ---------- */
+.turno {
+  flex: none;
+  display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: center;
+  padding: 12px 16px; background: #fff; border: 1px solid var(--linea); border-radius: 18px;
+  box-shadow: var(--sombra);
+}
+.turno[hidden] { display: none; }
+.orbe {
+  position: relative; grid-row: span 2;
+  width: 72px; height: 72px; border: 0; border-radius: 50%;
+  font-size: 30px; color: #fff; background: #94a3b8; cursor: default;
+  transition: background .2s, transform .2s;
+}
+.orbe span { position: relative; z-index: 1; }
+.orbe::after {
+  content: ""; position: absolute; inset: -8px; border-radius: 50%;
+  border: 3px solid currentColor; opacity: 0;
+  transform: scale(calc(1 + var(--nivel, 0) * .45));
+  transition: transform .08s, opacity .2s;
+}
+.turno[data-est="escuchando"] .orbe { background: var(--rojo); }
+.turno[data-est="escuchando"] .orbe::after { opacity: .45; animation: ecos 1.4s ease-out infinite; }
+@keyframes ecos { from { transform: scale(1); opacity: .5; } to { transform: scale(1.5); opacity: 0; } }
+.turno[data-est="voz"] .orbe { background: var(--naranja); }
+.turno[data-est="voz"] .orbe::after { opacity: .6; animation: none; }
+.turno[data-est="acierto"] .orbe { background: var(--verde); }
+.turno[data-est="fallo"] .orbe { background: #94a3b8; animation: tiembla .45s; }
+
+.turno-consigna { margin: 0; font-size: clamp(15px, 2vw, 18px); font-weight: 700; color: var(--tinta); }
+.turno-silabas  { margin: 0; font: 700 clamp(16px, 2.2vw, 21px) Georgia, serif; letter-spacing: .5px; color: var(--lila); }
+.turno-oido     { margin: 0; font-size: 13.5px; color: var(--suave); font-style: italic; }
+.onda { display: none; height: 38px; border-radius: 19px; background: #eef2ff; overflow: hidden; max-width: 360px; }
+.onda canvas { width: 100%; height: 100%; display: block; }
+.turno[data-est="escuchando"] .onda, .turno[data-est="voz"] .onda { display: block; }
+.turno-silabas[hidden], .turno-oido[hidden] { display: none; }
+.turno-botones { grid-column: 2; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- avisos de micrófono ---------- */
+.permiso-nota {
+  margin: 10px 0 0; padding: 9px 13px; background: #eff6ff; border: 1px solid #bfdbfe;
+  color: #1e40af; border-radius: 10px; font-size: 13.5px; line-height: 1.5; text-align: left;
+}
+.permiso-nota[hidden] { display: none; }
+
+/* ---------- botones ---------- */
+.boton {
+  font: 700 14.5px "Segoe UI", system-ui, sans-serif;
+  color: #fff; background: var(--azul);
+  border: 0; border-radius: 999px; padding: 10px 18px; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(29,78,216,.35);
+  transition: filter .15s, transform .1s;
+}
+.boton:hover { filter: brightness(1.08); }
+.boton:active { transform: translateY(1px); }
+.boton.claro { color: var(--tinta); background: #fff; border: 1.5px solid var(--linea); box-shadow: none; }
+.boton.claro:hover { background: #f8fafc; }
+.boton.principal { background: var(--verde); box-shadow: 0 2px 6px rgba(5,150,105,.35); }
+.boton.grande { font-size: 17px; padding: 13px 28px; background: var(--naranja); box-shadow: 0 3px 10px rgba(234,88,12,.35); }
+.boton:disabled { opacity: .45; cursor: default; }
+.boton[hidden] { display: none; }
+
+.mandos { flex: none; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+.enlace {
+  background: none; border: 0; padding: 0; margin-left: 4px;
+  color: var(--lila); font: inherit; text-decoration: underline; cursor: pointer;
+}
+
+/* ---------- portada y final ---------- */
+.portada, .final {
+  position: fixed; inset: 0; z-index: 20;
+  display: grid; place-items: center; padding: 18px;
+  background: rgba(15, 23, 42, .6);
+  overflow-y: auto;
+}
+.portada[hidden], .final[hidden] { display: none; }
+.portada-caja, .final-caja {
+  width: min(540px, 100%); text-align: center;
+  background: #fff; border-radius: 24px; padding: 26px 26px 22px;
+  box-shadow: 0 25px 50px rgba(15,23,42,.35);
+}
+.portada-caja h2, .final-caja h2 { margin: 2px 0 2px; font-size: clamp(24px, 4.4vw, 32px); color: var(--tinta); }
+.subtitulo { margin: 0 0 14px; font: italic 18px Georgia, serif; color: var(--lila); }
+.pasos { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 8px; text-align: left; }
+.pasos li { display: flex; gap: 12px; align-items: center; font-size: 15.5px; background: #f8fafc; border-radius: 12px; padding: 9px 13px; }
+.pasos li > span { font-size: 22px; flex: none; }
+.aviso { margin: 12px 0 0; padding: 9px 13px; background: #fef3c7; border-left: 4px solid var(--oro); border-radius: 10px; font-size: 14px; text-align: left; }
+.aviso[hidden] { display: none; }
+.privacidad { margin: 12px 0 0; font-size: 12px; line-height: 1.45; color: var(--suave); text-align: left; }
+.privacidad[hidden] { display: none; }
+
+.estrellas { font-size: 42px; letter-spacing: 6px; }
+.estrellas .apagada { filter: grayscale(1) opacity(.3); }
+.final-resumen { font-size: 17px; margin: 4px 0 12px; color: var(--tinta); }
+.practicar { margin: 0 0 12px; }
+.practicar p { margin: 0 0 8px; font-size: 14.5px; }
+.practicar[hidden] { display: none; }
+.practicar-lista { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.practicar-lista .boton { padding: 8px 14px; font-size: 13.5px; }
+.reflexion { background: #faf5ff; border-radius: 12px; padding: 11px 14px; font-size: 14.5px; text-align: left; color: var(--tinta); }
+
+/* ---------- teléfono ---------- */
+@media (max-width: 640px) {
+  .app { padding: 8px 10px; gap: 8px; }
+  .escenario { aspect-ratio: 4 / 3; width: min(100%, calc(22vh * 4 / 3)); border-radius: 16px; }
+  .pagina { padding: 15px 15px; }
+  .turno { grid-template-columns: auto 1fr; padding: 9px 11px; gap: 4px 10px; }
+  .orbe { width: 58px; height: 58px; font-size: 25px; }
+  .turno-consigna { font-size: 14px; }
+  .turno-botones { gap: 6px; }
+  .turno-botones .boton { padding: 7px 11px; font-size: 12.5px; }
+  .portada-caja, .final-caja { padding: 20px 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deriva, .polvo, .titila, .ave, .gota, .olas, .ondas, .vaiven, .coleta, .paginas,
+  .hueco.pendiente, .pagina.entra { animation: none !important; }
+  #viajera-pos, .domo, .esc { transition-duration: .01s; }
+}
+
+/* ---------- el componente montado dentro de cualquier página ---------- */
+.app.sin-escenario .escenario { display: none; }
+.lj-estado { text-align: center; padding: 48px 16px; font: italic 18px Georgia, serif; color: var(--lila); }
+.lj-error {
+  margin: 30px auto; max-width: 560px; padding: 16px 20px;
+  background: #fef3c7; border-left: 5px solid var(--oro); border-radius: 12px;
+  font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.5;
+}

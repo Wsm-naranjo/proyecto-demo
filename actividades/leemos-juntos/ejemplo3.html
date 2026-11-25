@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leemos juntos</title>
+<link rel="stylesheet" href="motor/estilos.css?v=11">
+</head>
+<body>
+<div style="text-align:center;background:#1f4e9c;padding:6px 10px;"><a href="index.html" style="color:#fff;font:600 13px/1.3 system-ui,sans-serif;text-decoration:none;">⬅ Más lecturas</a></div>
+
+<!-- Aquí se monta la lectura. Para mostrar otra, basta cambiar data-lectura. -->
+<div id="lector" data-lectura="mia-y-el-libro" data-base="lecturas/"></div>
+
+<script src="motor/lecturas.js?v=11"></script>
+<script src="motor/escucha.js?v=11"></script>
+<script src="motor/escena.js?v=11"></script>
+<script src="motor/lector.js?v=11"></script>
+<script>Lector.montar('#lector');</script>
+</body>
+</html>

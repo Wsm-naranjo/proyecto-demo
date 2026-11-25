@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Leemos juntos: una narradora lee en voz alta y te pasa el turno para que leas tú. Unidad 1 · Cuentos de todas partes.">
+<title>Leemos juntos · Lengua y Literatura</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%96%3C/text%3E%3C/svg%3E">
+<style>
+  /* Misma fuente que el resto de la plataforma (reutiliza los archivos
+     que ya trae Fonética, sin depender de una red externa). */
+  @font-face { font-family: 'Fredoka'; font-weight: 400; font-display: swap; src: url('../fonetica/lib/fonts/fredoka-latin-400-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Fredoka'; font-weight: 600; font-display: swap; src: url('../fonetica/lib/fonts/fredoka-latin-600-normal.woff2') format('woff2'); }
+  @font-face { font-family: 'Fredoka'; font-weight: 700; font-display: swap; src: url('../fonetica/lib/fonts/fredoka-latin-700-normal.woff2') format('woff2'); }
+
+  :root{
+    --azul:#1f4e9c; --tinta:#1f2937; --suave:#5b6b85;
+    --c1:#1f4e9c; --c1b:#eef3ff;
+    --c2:#8b5cf6; --c2b:#f3edff;
+    --c3:#f59e0b; --c3b:#fff6e6;
+  }
+  *{ box-sizing:border-box; }
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; } }
+  html, body{ height:100%; overflow:hidden; }
+  body{
+    margin:0; color:var(--tinta); font-family:"Fredoka","Baloo 2",system-ui,"Segoe UI",sans-serif;
+    display:flex; flex-direction:column;
+    background:linear-gradient(#8fd3ff 0%,#c9ecff 48%,#fff5da 100%);
+  }
+  a{ color:inherit; }
+
+  .volver-menu{
+    display:inline-flex; align-items:center; gap:6px; align-self:flex-start;
+    margin:10px 0 0 10px; background:var(--azul); color:#fff;
+    font:600 13px/1.2 system-ui,sans-serif; text-decoration:none;
+    padding:8px 14px; border-radius:999px; box-shadow:0 2px 8px rgba(0,0,0,.2);
+    opacity:.9; flex-shrink:0; z-index:2;
+  }
+  .volver-menu:hover{ opacity:1; }
+
+  header{ flex-shrink:0; padding:clamp(4px,1.5dvh,10px) 20px clamp(6px,2dvh,14px); text-align:center; }
+  header h1{ margin:0 0 4px; font-size:clamp(1.2rem,4dvh,2.1rem); color:var(--azul); }
+  header p{ margin:0 auto; max-width:55ch; color:var(--suave); font-size:clamp(.82rem,2dvh,1.05rem); }
+
+  main{ position:relative; flex:1; min-height:0; display:flex; align-items:stretch; justify-content:center; padding:4px 20px 18px; overflow-y:auto; }
+  .fondo-forma{ position:absolute; border-radius:999px; filter:blur(22px); pointer-events:none; }
+  .grid{
+    display:grid; gap:clamp(14px,3dvh,32px);
+    grid-template-columns:repeat(auto-fit,minmax(clamp(220px,20vw,300px),1fr));
+    grid-auto-rows:1fr;
+    max-width:clamp(640px,70vw,1180px); width:100%;
+    position:relative;
+  }
+
+  .tarjeta{
+    position:relative; display:flex; flex-direction:column; justify-content:center; gap:clamp(6px,1.4dvh,12px);
+    background:#fff; border:1px solid #dbe3f5; border-radius:22px;
+    padding:clamp(18px,4dvh,34px); text-decoration:none;
+    box-shadow:0 4px 14px rgba(31,78,156,.1);
+    transition:transform .15s, box-shadow .15s;
+    animation: tarjeta-entra .5s both; animation-delay: var(--retardo,0ms);
+  }
+  .tarjeta:hover, .tarjeta:focus-visible{ transform:translateY(-4px); box-shadow:0 12px 26px rgba(31,78,156,.18); outline:none; }
+  .tarjeta[data-color="1"]{ background:linear-gradient(180deg,var(--c1b),#fff); }
+  .tarjeta[data-color="2"]{ background:linear-gradient(180deg,var(--c2b),#fff); }
+  .tarjeta[data-color="3"]{ background:linear-gradient(180deg,var(--c3b),#fff); }
+
+  .isla{ position:relative; width:fit-content; margin-bottom:clamp(4px,1dvh,10px); }
+  .isla .emoji{
+    display:grid; place-items:center; width:clamp(50px,9dvh,86px); height:clamp(50px,9dvh,86px);
+    font-size:clamp(1.6rem,4dvh,2.6rem); border-radius:18px;
+    animation: flota 3.2s ease-in-out infinite; animation-delay: var(--flote,0ms);
+  }
+  .tarjeta[data-color="1"] .emoji{ background:var(--c1b); }
+  .tarjeta[data-color="2"] .emoji{ background:var(--c2b); }
+  .tarjeta[data-color="3"] .emoji{ background:var(--c3b); }
+  .isla .sombra{
+    position:absolute; left:50%; bottom:-7px; width:60%; height:8px; transform:translateX(-50%);
+    border-radius:999px; background:radial-gradient(ellipse at center, rgba(15,23,42,.25), transparent 72%);
+    animation: isla-sombra 3.2s ease-in-out infinite; animation-delay: var(--flote,0ms);
+  }
+
+  .tarjeta small{ font-weight:700; text-transform:uppercase; letter-spacing:.03em; font-size:clamp(.68rem,1.3dvh,.8rem); }
+  .tarjeta[data-color="1"] small{ color:var(--c1); }
+  .tarjeta[data-color="2"] small{ color:var(--c2); }
+  .tarjeta[data-color="3"] small{ color:var(--c3); }
+  .tarjeta strong{ font-size:clamp(1.05rem,2.6dvh,1.45rem); }
+  .tarjeta span.desc{ color:var(--suave); font-size:clamp(.85rem,1.8dvh,1.05rem); }
+  .ir{
+    margin-top:4px; padding-top:clamp(4px,1dvh,10px); font-weight:700; font-size:clamp(.85rem,1.8dvh,1.05rem);
+    display:inline-flex; align-items:center; gap:4px;
+  }
+  .tarjeta[data-color="1"] .ir{ color:var(--c1); }
+  .tarjeta[data-color="2"] .ir{ color:var(--c2); }
+  .tarjeta[data-color="3"] .ir{ color:var(--c3); }
+
+  @keyframes tarjeta-entra{ from{ transform:translateY(16px) scale(.96); opacity:0; } to{ transform:none; opacity:1; } }
+  @keyframes flota{ 50%{ transform:translateY(-7px); } }
+  @keyframes isla-sombra{ 50%{ transform:translateX(-50%) scale(.82); opacity:.6; } }
+</style>
+</head>
+<body>
+  <a href="../../index.html" class="volver-menu" title="Volver al menú de Lengua y Literatura">⬅ Lengua y Literatura</a>
+
+  <header>
+    <h1>📖 Leemos juntos</h1>
+    <p>Una narradora lee el cuento y, cuando te toca, te escucha leer a ti con el micrófono. Unidad 1 · Cuentos de todas partes.</p>
+  </header>
+
+  <main>
+    <svg aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:18%;pointer-events:none;" viewBox="0 0 400 160" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 95 L55 55 L95 78 L150 35 L205 82 L255 58 L310 92 L360 48 L400 80 L400 160 L0 160Z" fill="#ded3f8" />
+      <path d="M0 120 Q90 95 180 115 T400 108 L400 160 L0 160Z" fill="#8b5cf6" />
+    </svg>
+    <span class="fondo-forma" style="top:8%;left:6%;width:clamp(60px,14vh,160px);height:clamp(60px,14vh,160px);background:rgba(31,78,156,.12)"></span>
+    <span class="fondo-forma" style="bottom:10%;right:8%;width:clamp(70px,16vh,180px);height:clamp(70px,16vh,180px);background:rgba(139,92,246,.12)"></span>
+    <span class="fondo-forma" style="top:38%;right:20%;width:clamp(40px,9vh,100px);height:clamp(40px,9vh,100px);background:rgba(245,158,11,.12)"></span>
+    <div class="grid">
+      <a class="tarjeta" data-color="1" href="ejemplo3.html" style="--retardo:0ms">
+        <span class="isla" style="--flote:0ms">
+          <span class="emoji">🪶</span>
+          <span class="sombra" aria-hidden="true"></span>
+        </span>
+        <small>Lectura compartida</small>
+        <strong>Mía y el libro que volaba</strong>
+        <span class="desc">Una historia sobre costumbres y comunidad.</span>
+        <span class="ir">Leer →</span>
+      </a>
+      <a class="tarjeta" data-color="2" href="pruba.html" style="--retardo:70ms">
+        <span class="isla" style="--flote:250ms">
+          <span class="emoji">🐺</span>
+          <span class="sombra" aria-hidden="true" style="--flote:250ms"></span>
+        </span>
+        <small>Lectura compartida · 6 voces</small>
+        <strong>Los tres cerditos y el lobo feroz</strong>
+        <span class="desc">El clásico cuento, con un personaje distinto por voz.</span>
+        <span class="ir">Leer →</span>
+      </a>
+      <a class="tarjeta" data-color="3" href="ejemplo2.html" style="--retardo:140ms">
+        <span class="isla" style="--flote:500ms">
+          <span class="emoji">✉️</span>
+          <span class="sombra" aria-hidden="true" style="--flote:500ms"></span>
+        </span>
+        <small>Lectura compartida · ejemplo corto</small>
+        <strong>El viaje de una palabra</strong>
+        <span class="desc">Una lectura breve, ideal para empezar.</span>
+        <span class="ir">Leer →</span>
+      </a>
+    </div>
+  </main>
+</body>
+</html>
